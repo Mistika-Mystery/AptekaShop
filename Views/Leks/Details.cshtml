@@ -1,0 +1,36 @@
+﻿@model apteka.Models.Lek
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>Lek</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Naz)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Naz)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Qena)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Qena)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Foto)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Foto)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.IDL">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>
