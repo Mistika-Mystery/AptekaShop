@@ -1,5 +1,6 @@
 ﻿using apteka.Data;
 using apteka.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,12 +20,14 @@ namespace apteka.Controllers
         }
 
         // GET: Leks
+        [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
             return View(await _context.Leks.ToListAsync());
         }
 
         // GET: Leks/Details/5
+        [AllowAnonymous]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)

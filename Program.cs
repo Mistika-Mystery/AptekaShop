@@ -1,4 +1,5 @@
 ﻿using apteka.Data;
+using apteka.Filters;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,7 +9,11 @@ builder.Services.AddDbContext<ApplicationDbContext2>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Äîáàâëåíèå ñåðâèñîâ MVC
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add<SessionAuthorizationFilter>();
+});
+builder.Services.AddScoped<SessionAuthorizationFilter>();
 // Äîáàâëåíèå ïîääåðæêè ñåññèé
 builder.Services.AddSession();
 

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using apteka.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace dgdfhfhg.Controllers
@@ -13,6 +14,7 @@ namespace dgdfhfhg.Controllers
             _logger = logger;
         }
 
+        [AllowAnonymous]
         public IActionResult Index()
         {
             return View();
