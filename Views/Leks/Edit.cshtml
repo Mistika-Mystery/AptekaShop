@@ -13,6 +13,7 @@
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="IDL" />
+            <input type="hidden" asp-for="Foto" />
             <div class="form-group">
                 <label asp-for="Naz" class="control-label"></label>
                 <input asp-for="Naz" class="form-control" />
@@ -23,11 +24,16 @@
                 <input asp-for="Qena" class="form-control" />
                 <span asp-validation-for="Qena" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Foto" class="control-label"></label>
-                <input asp-for="Foto" class="form-control" />
-                <span asp-validation-for="Foto" class="text-danger"></span>
+            <div class="form-group mb-3">
+                <label class="control-label">Текущее изображение</label>
+                <input class="form-control" value="@(string.IsNullOrWhiteSpace(Model.Foto) ? "Изображение не выбрано" : Model.Foto)" readonly />
             </div>
+            @if (!string.IsNullOrWhiteSpace(Model.Foto))
+            {
+                <div class="form-group mb-3">
+                    <img src="~/Img/@Model.Foto" alt="@Model.Naz" style="max-width: 200px;" />
+                </div>
+            }
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
