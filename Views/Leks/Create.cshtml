@@ -23,59 +23,18 @@
                 <span asp-validation-for="Qena" class="text-danger"></span>
             </div>
 
-            <input asp-for="Foto" type="hidden" />
-            <input type="hidden" id="imageSource" name="imageSource" value="" />
-
             <div class="form-group mb-3">
                 <label class="control-label d-block">Изображение</label>
-                <button type="button" class="btn btn-outline-primary" id="openImageSourceDialog">
-                    Выбрать источник изображения
+                <button type="button" class="btn btn-outline-primary" id="selectImageButton">
+                    Выбрать изображение
                 </button>
-                <div class="form-text" id="selectedImageInfo">Источник изображения ещё не выбран.</div>
+                <input type="file" class="d-none" id="imageFile" name="imageFile" accept="image/*" />
+                <div class="form-text" id="selectedImageInfo">Файл изображения ещё не выбран.</div>
                 <span asp-validation-for="Foto" class="text-danger d-block"></span>
             </div>
 
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-
-            <div class="modal fade" id="imageSourceModal" tabindex="-1" aria-labelledby="imageSourceModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="imageSourceModalLabel">Выбор источника изображения</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="radio" name="imageSourceOption" id="imageSourceUpload" value="upload" checked>
-                                <label class="form-check-label" for="imageSourceUpload">
-                                    Загрузить с компьютера
-                                </label>
-                            </div>
-                            <div class="form-check mb-3">
-                                <input class="form-check-input" type="radio" name="imageSourceOption" id="imageSourceUrl" value="url">
-                                <label class="form-check-label" for="imageSourceUrl">
-                                    Загрузить по ссылке
-                                </label>
-                            </div>
-
-                            <div id="uploadSourceBlock">
-                                <label for="imageFile" class="form-label">Файл изображения</label>
-                                <input type="file" class="form-control" id="imageFile" name="imageFile" accept="image/*" />
-                            </div>
-
-                            <div id="urlSourceBlock" class="d-none">
-                                <label for="imageUrl" class="form-label">Ссылка на изображение</label>
-                                <input type="url" class="form-control" id="imageUrl" name="imageUrl" placeholder="https://example.com/image.jpg" />
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                            <button type="button" class="btn btn-primary" id="confirmImageSource">Подтвердить</button>
-                        </div>
-                    </div>
-                </div>
             </div>
         </form>
     </div>
@@ -90,69 +49,22 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const modalElement = document.getElementById('imageSourceModal');
-            const modal = new bootstrap.Modal(modalElement);
-            const openButton = document.getElementById('openImageSourceDialog');
-            const confirmButton = document.getElementById('confirmImageSource');
-            const sourceField = document.getElementById('imageSource');
-            const selectedInfo = document.getElementById('selectedImageInfo');
-            const uploadBlock = document.getElementById('uploadSourceBlock');
-            const urlBlock = document.getElementById('urlSourceBlock');
-            const uploadOption = document.getElementById('imageSourceUpload');
-            const urlOption = document.getElementById('imageSourceUrl');
+            const selectImageButton = document.getElementById('selectImageButton');
             const imageFileInput = document.getElementById('imageFile');
-            const imageUrlInput = document.getElementById('imageUrl');
+            const selectedInfo = document.getElementById('selectedImageInfo');
 
-            const toggleSourceBlocks = () => {
-                const isUpload = uploadOption.checked;
-                uploadBlock.classList.toggle('d-none', !isUpload);
-                urlBlock.classList.toggle('d-none', isUpload);
-            };
+            selectImageButton.addEventListener('click', function () {
+                imageFileInput.click();
+            });
 
-            const updateSelectedInfo = () => {
-                if (sourceField.value === 'upload' && imageFileInput.files.length > 0) {
+            imageFileInput.addEventListener('change', function () {
+                if (imageFileInput.files.length > 0) {
                     selectedInfo.textContent = `Выбран файл: ${imageFileInput.files[0].name}`;
                     return;
                 }
 
-                if (sourceField.value === 'url' && imageUrlInput.value.trim() !== '') {
-                    selectedInfo.textContent = `Выбрана ссылка: ${imageUrlInput.value.trim()}`;
-                    return;
-                }
-
-                selectedInfo.textContent = 'Источник изображения ещё не выбран.';
-            };
-
-            openButton.addEventListener('click', function () {
-                modal.show();
+                selectedInfo.textContent = 'Файл изображения ещё не выбран.';
             });
-
-            uploadOption.addEventListener('change', toggleSourceBlocks);
-            urlOption.addEventListener('change', toggleSourceBlocks);
-
-            confirmButton.addEventListener('click', function () {
-                sourceField.value = uploadOption.checked ? 'upload' : 'url';
-                updateSelectedInfo();
-                modal.hide();
-            });
-
-            imageFileInput.addEventListener('change', function () {
-                if (uploadOption.checked) {
-                    sourceField.value = 'upload';
-                    updateSelectedInfo();
-                }
-            });
-
-            imageUrlInput.addEventListener('input', function () {
-                if (urlOption.checked) {
-                    sourceField.value = 'url';
-                    updateSelectedInfo();
-                }
-            });
-
-            toggleSourceBlocks();
-            modal.show();
-            updateSelectedInfo();
         });
     </script>
 }
