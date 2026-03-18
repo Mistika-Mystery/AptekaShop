@@ -15,7 +15,7 @@ namespace apteka.Models
         public Proiz? Proiz { get; set; }
         public Akqia? Akqia { get; set; }
         public VidZ? VidZ { get; set; }
-        public string Foto { get; set; }
+        public string? Foto { get; set; }
         public ICollection<ZakLek>? ZakLeks { get; set; }
     }
 }

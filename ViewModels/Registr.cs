@@ -10,7 +10,7 @@ namespace CustomIdentityApp.ViewModels
 
         [Required]
         [Display(Name = "Год рождения")]
-        public string Login { get; set; }
+        public string? Login { get; set; }
         public int Age { get; set; }
         [Required]
         [Display(Name = "Роль")]
