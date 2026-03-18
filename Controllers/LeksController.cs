@@ -97,7 +97,10 @@ namespace apteka.Controllers
         // POST: Leks/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("IDL,Naz,Qena,Foto")] Lek lek)
+        public async Task<IActionResult> Edit(
+            int id,
+            [Bind("IDL,Naz,Qena,Foto")] Lek lek,
+            IFormFile? imageFile)
         {
             if (id != lek.IDL)
             {
@@ -108,8 +111,31 @@ namespace apteka.Controllers
             {
                 try
                 {
+                    var existingLek = await _context.Leks
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(item => item.IDL == id);
+
+                    if (existingLek == null)
+                    {
+                        return NotFound();
+                    }
+
+                    if (imageFile is { Length: > 0 })
+                    {
+                        lek.Foto = await SaveUploadedImageAsync(imageFile);
+                        DeleteImageIfExists(existingLek.Foto);
+                    }
+                    else
+                    {
+                        lek.Foto = existingLek.Foto;
+                    }
+
                     _context.Update(lek);
                     await _context.SaveChangesAsync();
+                }
+                catch (InvalidOperationException ex)
+                {
+                    ModelState.AddModelError("Foto", ex.Message);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -202,6 +228,20 @@ namespace apteka.Controllers
             var imageDirectory = Path.Combine(_environment.WebRootPath, "Img");
             Directory.CreateDirectory(imageDirectory);
             return imageDirectory;
+        }
+
+        private void DeleteImageIfExists(string? fileName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                return;
+            }
+
+            var filePath = Path.Combine(GetImageDirectoryPath(), fileName);
+            if (System.IO.File.Exists(filePath))
+            {
+                System.IO.File.Delete(filePath);
+            }
         }
 
         private static bool IsImageContent(string? contentType)
