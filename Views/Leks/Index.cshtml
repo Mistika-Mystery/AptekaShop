@@ -1,14 +1,19 @@
 ﻿@model IEnumerable<apteka.Models.Lek>
-
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Каталог";
+    var userRole = Context.Session.GetString("UserRole")?.Trim().ToLowerInvariant();
+    var isAdmin = userRole == "admin";
 }
 
-<h1>Index</h1>
+<h1>Каталог лекарств</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+@if (isAdmin)
+{
+    <p>
+        <a asp-action="Create">Добавить лекарство</a>
+    </p>
+}
+
 <table class="table">
     <thead>
         <tr>
@@ -46,9 +51,14 @@
                 }
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.IDL">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.IDL">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.IDL">Delete</a>
+                <a asp-action="Details" asp-route-id="@item.IDL">Подробнее</a>
+                @if (isAdmin)
+                {
+                    <span>|</span>
+                    <a asp-action="Edit" asp-route-id="@item.IDL">Изменить</a>
+                    <span>|</span>
+                    <a asp-action="Delete" asp-route-id="@item.IDL">Удалить</a>
+                }
             </td>
         </tr>
 }
