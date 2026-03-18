@@ -26,7 +26,15 @@
             @Html.DisplayNameFor(model => model.Foto)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Foto)
+            @if (!string.IsNullOrWhiteSpace(Model.Foto))
+            {
+                <div class="mb-2">@Model.Foto</div>
+                <img src="~/Img/@Model.Foto" alt="@Model.Naz" style="max-width: 250px;" />
+            }
+            else
+            {
+                <span>Изображение не выбрано</span>
+            }
         </dd>
     </dl>
 </div>
