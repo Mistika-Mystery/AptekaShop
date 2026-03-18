@@ -1,5 +1,4 @@
-﻿using System.Net.Http.Headers;
-using apteka.Data;
+﻿using apteka.Data;
 using apteka.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,16 +9,13 @@ namespace apteka.Controllers
     {
         private readonly ApplicationDbContext2 _context;
         private readonly IWebHostEnvironment _environment;
-        private readonly IHttpClientFactory _httpClientFactory;
 
         public LeksController(
             ApplicationDbContext2 context,
-            IWebHostEnvironment environment,
-            IHttpClientFactory httpClientFactory)
+            IWebHostEnvironment environment)
         {
             _context = context;
             _environment = environment;
-            _httpClientFactory = httpClientFactory;
         }
 
         // GET: Leks
@@ -57,30 +53,18 @@ namespace apteka.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
             [Bind("IDL,Naz,Qena")] Lek lek,
-            IFormFile? imageFile,
-            string? imageUrl,
-            string? imageSource)
+            IFormFile? imageFile)
         {
-            if (imageSource == "upload")
+            if (imageFile == null || imageFile.Length == 0)
             {
-                if (imageFile == null || imageFile.Length == 0)
-                {
-                    ModelState.AddModelError("Foto", "Выберите файл изображения.");
-                }
-            }
-            else if (imageSource == "url")
-            {
-                if (string.IsNullOrWhiteSpace(imageUrl))
-                {
-                    ModelState.AddModelError("Foto", "Укажите ссылку на изображение.");
-                }
+                ModelState.AddModelError("Foto", "Выберите файл изображения.");
             }
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    lek.Foto = await SaveImageAsync(imageSource, imageFile, imageUrl);
+                    lek.Foto = await SaveUploadedImageAsync(imageFile!);
                     _context.Add(lek);
                     await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index));
@@ -88,10 +72,6 @@ namespace apteka.Controllers
                 catch (InvalidOperationException ex)
                 {
                     ModelState.AddModelError("Foto", ex.Message);
-                }
-                catch (HttpRequestException)
-                {
-                    ModelState.AddModelError("Foto", "Не удалось загрузить изображение по ссылке.");
                 }
             }
 
@@ -185,26 +165,16 @@ namespace apteka.Controllers
             return _context.Leks.Any(e => e.IDL == id);
         }
 
-        private async Task<string?> SaveImageAsync(string? imageSource, IFormFile? imageFile, string? imageUrl)
-        {
-            if (imageSource == "upload")
-            {
-                return await SaveUploadedImageAsync(imageFile!);
-            }
-
-            if (imageSource == "url")
-            {
-                return await SaveImageFromUrlAsync(imageUrl!);
-            }
-
-            return null;
-        }
-
         private async Task<string> SaveUploadedImageAsync(IFormFile imageFile)
         {
             if (imageFile.Length == 0)
             {
                 throw new InvalidOperationException("Файл изображения пустой.");
+            }
+
+            if (!IsImageContent(imageFile.ContentType))
+            {
+                throw new InvalidOperationException("Можно загружать только файлы изображений.");
             }
 
             var extension = Path.GetExtension(imageFile.FileName);
@@ -227,43 +197,6 @@ namespace apteka.Controllers
             return fileName;
         }
 
-        private async Task<string> SaveImageFromUrlAsync(string imageUrl)
-        {
-            if (!Uri.TryCreate(imageUrl, UriKind.Absolute, out var uri))
-            {
-                throw new InvalidOperationException("Ссылка на изображение имеет неверный формат.");
-            }
-
-            var client = _httpClientFactory.CreateClient();
-            using var response = await client.GetAsync(uri);
-            response.EnsureSuccessStatusCode();
-
-            if (!IsImageContent(response.Content.Headers.ContentType))
-            {
-                throw new InvalidOperationException("Указанная ссылка не содержит изображение.");
-            }
-
-            var extension = GetExtensionFromUri(uri);
-            if (string.IsNullOrWhiteSpace(extension))
-            {
-                extension = GetExtensionFromContentType(response.Content.Headers.ContentType?.MediaType);
-            }
-
-            if (string.IsNullOrWhiteSpace(extension))
-            {
-                throw new InvalidOperationException("Не удалось определить формат изображения.");
-            }
-
-            var fileName = $"{Guid.NewGuid():N}{extension}";
-            var filePath = Path.Combine(GetImageDirectoryPath(), fileName);
-
-            await using var sourceStream = await response.Content.ReadAsStreamAsync();
-            await using var destinationStream = new FileStream(filePath, FileMode.Create);
-            await sourceStream.CopyToAsync(destinationStream);
-
-            return fileName;
-        }
-
         private string GetImageDirectoryPath()
         {
             var imageDirectory = Path.Combine(_environment.WebRootPath, "Img");
@@ -271,15 +204,9 @@ namespace apteka.Controllers
             return imageDirectory;
         }
 
-        private static bool IsImageContent(MediaTypeHeaderValue? contentType)
+        private static bool IsImageContent(string? contentType)
         {
-            return contentType?.MediaType?.StartsWith("image/", StringComparison.OrdinalIgnoreCase) == true;
-        }
-
-        private static string? GetExtensionFromUri(Uri uri)
-        {
-            var extension = Path.GetExtension(uri.AbsolutePath);
-            return string.IsNullOrWhiteSpace(extension) ? null : extension;
+            return contentType?.StartsWith("image/", StringComparison.OrdinalIgnoreCase) == true;
         }
 
         private static string? GetExtensionFromContentType(string? contentType)

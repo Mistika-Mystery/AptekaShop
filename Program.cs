@@ -1,9 +1,8 @@
-using apteka.Data;
+﻿using apteka.Data;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddHttpClient();
 // Äîáàâëåíèå êîíòåêñòà áàçû äàííûõ
 builder.Services.AddDbContext<ApplicationDbContext2>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
